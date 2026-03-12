@@ -1,6 +1,5 @@
 import os
 import hashlib
-import magic
 from werkzeug.utils import secure_filename
 from flask import current_app
 
