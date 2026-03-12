@@ -1,0 +1,519 @@
+{% extends "base.html" %}
+{% block title %}SecureCheck — AI-Powered Security Scanner{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Hero ── */
+.hero {
+    position: relative;
+    overflow: hidden;
+    padding: 7rem 0 5rem;
+    background:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(0,212,255,0.12) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 50% at 80% 60%, rgba(124,58,237,0.1) 0%, transparent 60%),
+        var(--bg);
+}
+
+/* CSS grid lines */
+.hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(0,212,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,212,255,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+}
+
+.hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--cyan);
+    background: rgba(0,212,255,0.08);
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 20px;
+    padding: 0.35rem 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+.hero h1 {
+    font-size: clamp(2.4rem, 5vw, 3.8rem);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: #fff;
+    margin-bottom: 1.2rem;
+}
+
+.hero h1 .highlight {
+    background: linear-gradient(135deg, var(--cyan), #7c3aed);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.hero-sub {
+    font-size: 1.1rem;
+    color: rgba(255,255,255,0.6);
+    max-width: 520px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.7;
+}
+
+.hero-cta { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 4rem; }
+
+/* ── Scanning animated badge ── */
+.scan-live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 1rem;
+}
+
+.dot-live {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse-dot 1.8s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.5); }
+    50%       { box-shadow: 0 0 0 6px rgba(16,185,129,0); }
+}
+
+/* ── Tech stack chips ── */
+.tech-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin-top: 3rem; }
+
+.tech-chip {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 0.3rem 0.8rem;
+    letter-spacing: 0.03em;
+}
+
+/* ── Stats bar ── */
+.stats-bar {
+    background: rgba(0,212,255,0.04);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 2rem 0;
+}
+
+.stat-item { text-align: center; }
+
+.stat-big {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+}
+
+.stat-big span { color: var(--cyan); }
+
+.stat-desc {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-top: 0.3rem;
+}
+
+/* ── Scanner cards ── */
+.scanners-section { padding: 5rem 0; }
+
+.scanner-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    height: 100%;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.scanner-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 50% at 50% 100%, rgba(0,212,255,0.06), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.scanner-card:hover {
+    border-color: rgba(0,212,255,0.4);
+    transform: translateY(-6px);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 30px rgba(0,212,255,0.12);
+}
+
+.scanner-card:hover::before { opacity: 1; }
+
+.scanner-card-icon {
+    width: 54px; height: 54px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: 1.2rem;
+}
+
+.icon-cyan   { background: rgba(0,212,255,0.12); color: var(--cyan); }
+.icon-purple { background: rgba(124,58,237,0.15); color: #a78bfa; }
+.icon-green  { background: rgba(16,185,129,0.12); color: #34d399; }
+.icon-amber  { background: rgba(245,158,11,0.12); color: #fbbf24; }
+
+.scanner-card h4 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #fff;
+}
+
+.scanner-card p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 1.2rem;
+}
+
+.scanner-card-link {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--cyan);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: gap 0.2s;
+}
+
+.scanner-card:hover .scanner-card-link { gap: 0.7rem; }
+
+.scanner-chip {
+    font-size: 0.68rem;
+    background: rgba(0,212,255,0.08);
+    border: 1px solid rgba(0,212,255,0.15);
+    color: var(--text-muted);
+    border-radius: 4px;
+    padding: 0.15rem 0.5rem;
+    margin-right: 0.3rem;
+}
+
+/* ── How it works ── */
+.how-section {
+    padding: 5rem 0;
+    background:
+        radial-gradient(ellipse 70% 60% at 0% 50%, rgba(124,58,237,0.06) 0%, transparent 60%),
+        transparent;
+}
+
+.step-number {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--cyan), var(--purple));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    color: #fff;
+    margin: 0 auto 1rem;
+    flex-shrink: 0;
+}
+
+.step-connector {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--cyan), var(--purple));
+    opacity: 0.3;
+    margin-top: -20px;
+}
+
+/* ── CTA banner ── */
+.cta-section {
+    padding: 5rem 0;
+    text-align: center;
+}
+
+.cta-card {
+    background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(124,58,237,0.08));
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 20px;
+    padding: 4rem 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.cta-card::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(ellipse 60% 40% at 50% 50%, rgba(0,212,255,0.05), transparent);
+    animation: rotate-slow 20s linear infinite;
+}
+
+@keyframes rotate-slow {
+    to { transform: rotate(360deg); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── Hero ── -->
+<section class="hero text-center">
+    <div class="container position-relative">
+        <div class="hero-eyebrow">
+            <i class="fas fa-shield-halved fa-xs"></i>
+            AI-Powered Threat Detection
+        </div>
+
+        <h1>
+            Detect Every Threat.<br>
+            <span class="highlight">Protect Every Asset.</span>
+        </h1>
+
+        <p class="hero-sub">
+            One platform for file malware, phishing emails, malicious URLs and suspicious IPs —
+            powered by machine learning and real-time threat intelligence.
+        </p>
+
+        <div class="hero-cta">
+            <a href="{{ url_for('scanner.file_scan') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-rocket me-2"></i>Start Scanning
+            </a>
+            {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('auth.register') }}" class="btn btn-outline-light btn-lg">
+                <i class="fas fa-user-plus me-2"></i>Create Free Account
+            </a>
+            {% else %}
+            <a href="{{ url_for('scanner.user_dashboard') }}" class="btn btn-outline-light btn-lg">
+                <i class="fas fa-gauge me-2"></i>My Dashboard
+            </a>
+            {% endif %}
+        </div>
+
+        <div class="scan-live-badge">
+            <span class="dot-live"></span>
+            Platform active &mdash; Multi-vector scanning online
+        </div>
+
+        <div class="tech-chips">
+            <span class="tech-chip"><i class="fas fa-brain fa-xs me-1"></i>Random Forest</span>
+            <span class="tech-chip"><i class="fas fa-brain fa-xs me-1"></i>SVM</span>
+            <span class="tech-chip"><i class="fas fa-brain fa-xs me-1"></i>Decision Tree</span>
+            <span class="tech-chip">VirusTotal API</span>
+            <span class="tech-chip">AbuseIPDB</span>
+            <span class="tech-chip">Google Safe Browsing</span>
+            <span class="tech-chip">URLhaus</span>
+            <span class="tech-chip">SpamAssassin Corpus</span>
+        </div>
+    </div>
+</section>
+
+<!-- ── Stats Bar ── -->
+<div class="stats-bar">
+    <div class="container">
+        <div class="row g-4 justify-content-center">
+            <div class="col-6 col-md-3">
+                <div class="stat-item">
+                    <div class="stat-big">4<span>+</span></div>
+                    <div class="stat-desc">Threat Vectors</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-item">
+                    <div class="stat-big">70<span>+</span></div>
+                    <div class="stat-desc">AV Engines</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-item">
+                    <div class="stat-big">94<span>%</span></div>
+                    <div class="stat-desc">Email Accuracy</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-item">
+                    <div class="stat-big">3</div>
+                    <div class="stat-desc">ML Algorithms</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Scanner Cards ── -->
+<section class="scanners-section">
+    <div class="container">
+        <div class="text-center mb-5">
+            <div class="section-label">Core Scanners</div>
+            <h2 style="font-size: 2rem; font-weight: 800;">Four Layers of Protection</h2>
+            <div class="accent-line"></div>
+        </div>
+
+        <div class="row g-4">
+            <!-- File Scanner -->
+            <div class="col-lg-3 col-md-6">
+                <a href="{{ url_for('scanner.file_scan') }}" style="text-decoration: none;">
+                <div class="scanner-card">
+                    <div class="scanner-card-icon icon-cyan">
+                        <i class="fas fa-file-shield"></i>
+                    </div>
+                    <h4>File Scanner</h4>
+                    <p>Detect malware in executables, documents, scripts and archives using ensemble ML models.</p>
+                    <div class="mb-3">
+                        <span class="scanner-chip">PE Analysis</span>
+                        <span class="scanner-chip">lief</span>
+                        <span class="scanner-chip">oletools</span>
+                    </div>
+                    <div class="scanner-card-link">
+                        Scan a file <i class="fas fa-arrow-right fa-xs"></i>
+                    </div>
+                </div>
+                </a>
+            </div>
+
+            <!-- Email Analyzer -->
+            <div class="col-lg-3 col-md-6">
+                <a href="{{ url_for('scanner.email_scan') }}" style="text-decoration: none;">
+                <div class="scanner-card">
+                    <div class="scanner-card-icon icon-purple">
+                        <i class="fas fa-envelope-open-text"></i>
+                    </div>
+                    <h4>Email Analyzer</h4>
+                    <p>Validate DKIM, SPF and DMARC authentication, detect phishing and inspect embedded links.</p>
+                    <div class="mb-3">
+                        <span class="scanner-chip">DKIM</span>
+                        <span class="scanner-chip">SPF</span>
+                        <span class="scanner-chip">DMARC</span>
+                    </div>
+                    <div class="scanner-card-link">
+                        Analyze email <i class="fas fa-arrow-right fa-xs"></i>
+                    </div>
+                </div>
+                </a>
+            </div>
+
+            <!-- URL Scanner -->
+            <div class="col-lg-3 col-md-6">
+                <a href="{{ url_for('scanner.url_scan') }}" style="text-decoration: none;">
+                <div class="scanner-card">
+                    <div class="scanner-card-icon icon-green">
+                        <i class="fas fa-link"></i>
+                    </div>
+                    <h4>URL Scanner</h4>
+                    <p>Check URLs against Google Safe Browsing, URLhaus, domain age and lookalike detection.</p>
+                    <div class="mb-3">
+                        <span class="scanner-chip">URLhaus</span>
+                        <span class="scanner-chip">WHOIS</span>
+                        <span class="scanner-chip">TLD Risk</span>
+                    </div>
+                    <div class="scanner-card-link">
+                        Check URL <i class="fas fa-arrow-right fa-xs"></i>
+                    </div>
+                </div>
+                </a>
+            </div>
+
+            <!-- IP Checker -->
+            <div class="col-lg-3 col-md-6">
+                <a href="{{ url_for('scanner.ip_scan') }}" style="text-decoration: none;">
+                <div class="scanner-card">
+                    <div class="scanner-card-icon icon-amber">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <h4>IP Checker</h4>
+                    <p>Query AbuseIPDB for abuse reports, ISP details, geolocation and usage classification.</p>
+                    <div class="mb-3">
+                        <span class="scanner-chip">AbuseIPDB</span>
+                        <span class="scanner-chip">GeoIP</span>
+                        <span class="scanner-chip">ASN</span>
+                    </div>
+                    <div class="scanner-card-link">
+                        Check IP <i class="fas fa-arrow-right fa-xs"></i>
+                    </div>
+                </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── How it works ── -->
+<section class="how-section">
+    <div class="container">
+        <div class="text-center mb-5">
+            <div class="section-label">Process</div>
+            <h2 style="font-size: 2rem; font-weight: 800;">How It Works</h2>
+            <div class="accent-line"></div>
+        </div>
+        <div class="row g-4 text-center">
+            <div class="col-md-4">
+                <div class="step-number">1</div>
+                <h5 style="font-weight: 700; margin-bottom: 0.5rem;">Submit</h5>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">
+                    Upload a file, paste an email, enter a URL or IP address into the appropriate scanner.
+                </p>
+            </div>
+            <div class="col-md-4">
+                <div class="step-number">2</div>
+                <h5 style="font-weight: 700; margin-bottom: 0.5rem;">Analyze</h5>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">
+                    Our ML models and threat intelligence APIs analyze the input across multiple detection layers.
+                </p>
+            </div>
+            <div class="col-md-4">
+                <div class="step-number">3</div>
+                <h5 style="font-weight: 700; margin-bottom: 0.5rem;">Report</h5>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">
+                    Receive a detailed risk assessment with a threat score, indicators, and a downloadable PDF report.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── CTA ── -->
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-card">
+            <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 1rem; position: relative;">
+                Start protecting your assets today
+            </h2>
+            <p style="color: var(--text-muted); max-width: 480px; margin: 0 auto 2rem; position: relative;">
+                {% if current_user.is_authenticated %}
+                You're logged in — jump straight to the dashboard or start a scan.
+                {% else %}
+                Create a free account to save scan history, download PDF reports and access analytics.
+                {% endif %}
+            </p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap position-relative">
+                <a href="{{ url_for('scanner.file_scan') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-shield-halved me-2"></i>Run a Scan
+                </a>
+                {% if not current_user.is_authenticated %}
+                <a href="{{ url_for('auth.register') }}" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-user-plus me-2"></i>Register Free
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

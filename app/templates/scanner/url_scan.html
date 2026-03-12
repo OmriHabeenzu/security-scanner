@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}URL Scanner — SecureCheck{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <i class="fas fa-link scan-icon"></i>
+        <h2 class="mt-3">URL Safety Scanner</h2>
+        <p>Check links for malicious content, phishing, and reputation issues before you click</p>
+        <div class="accent-line"></div>
+      </div>
+
+      <!-- Scan Card -->
+      <div class="card mb-4">
+        <div class="card-body p-4">
+          <form method="POST" id="urlForm">
+            <div class="mb-4">
+              <label for="url" class="form-label">
+                <i class="fas fa-globe me-1" style="color:var(--cyan)"></i> Enter URL to Check
+              </label>
+              <div class="input-group input-group-lg">
+                <span class="input-group-text"><i class="fas fa-link"></i></span>
+                <input type="text" class="form-control" id="url" name="url"
+                       placeholder="https://example.com" required>
+              </div>
+              <small class="form-text text-muted">Enter any URL — with or without https://</small>
+            </div>
+
+            <div class="alert alert-warning mb-4">
+              <i class="fas fa-triangle-exclamation me-2"></i>
+              <strong>Safety tip:</strong> Never click suspicious links directly.
+              Always verify with this tool first.
+            </div>
+
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-success btn-lg">
+                <i class="fas fa-shield-halved me-1"></i> Check URL Safety
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Guest Notice -->
+      {% if not current_user.is_authenticated %}
+      <div class="alert alert-info mb-4">
+        <i class="fas fa-circle-info me-2"></i>
+        <strong>Guest Mode:</strong> Results won't be saved.
+        <a href="{{ url_for('auth.register') }}" class="alert-link">Register free</a> to track scans!
+      </div>
+      {% endif %}
+
+      <!-- Feature info cards -->
+      <div class="row g-3 mt-1">
+        <div class="col-md-6">
+          <div class="feature-info-card">
+            <div class="feature-icon-wrap"><i class="fas fa-magnifying-glass"></i></div>
+            <h6>Pattern Analysis</h6>
+            <p>Detects suspicious URL patterns, raw IP addresses, misleading subdomains, and URL shorteners.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="feature-info-card">
+            <div class="feature-icon-wrap"><i class="fas fa-database"></i></div>
+            <h6>Reputation Check</h6>
+            <p>Cross-references against threat intelligence via VirusTotal and Google Safe Browsing APIs.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

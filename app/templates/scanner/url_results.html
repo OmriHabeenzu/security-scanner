@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}URL Scan Results — SecureCheck{% endblock %}
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+
+      <div class="page-header">
+        <h2>URL Safety Check Results</h2>
+        <div class="accent-line"></div>
+      </div>
+
+      {% if result.success %}
+
+        <!-- Status Hero -->
+        <div class="card mb-4 text-center">
+          <div class="card-body p-5">
+            {% if result.is_malicious %}
+              <i class="fas fa-triangle-exclamation result-icon text-danger"></i>
+              <h3 class="mt-3 text-danger">Potentially Malicious URL!</h3>
+              <p class="text-muted mb-3">This URL shows signs of being unsafe</p>
+              <span class="badge bg-danger" style="font-size: 1rem; padding: 0.5em 1.4em;">{{ result.threat_type }}</span>
+            {% else %}
+              <i class="fas fa-circle-check result-icon text-success"></i>
+              <h3 class="mt-3 text-success">URL Appears Safe</h3>
+              <p class="text-muted mb-3">No major threats detected</p>
+              <span class="badge bg-success" style="font-size: 1rem; padding: 0.5em 1.4em;">Safe</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- URL Details -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <i class="fas fa-circle-info me-2" style="color:var(--cyan)"></i>URL Information
+          </div>
+          <div class="card-body">
+            <table class="table table-borderless mb-0">
+              <tr>
+                <td class="fw-bold" style="width:28%; color:var(--text-muted);"><i class="fas fa-link me-2"></i>URL</td>
+                <td style="word-break: break-all;">{{ result.url }}</td>
+              </tr>
+              <tr>
+                <td class="fw-bold" style="color:var(--text-muted);"><i class="fas fa-globe me-2"></i>Domain</td>
+                <td>{{ result.domain }}</td>
+              </tr>
+              <tr>
+                <td class="fw-bold" style="color:var(--text-muted);"><i class="fas fa-lock me-2"></i>HTTPS</td>
+                <td>
+                  {% if result.uses_https %}
+                    <span class="badge bg-success"><i class="fas fa-check me-1"></i>Yes</span>
+                  {% else %}
+                    <span class="badge bg-warning"><i class="fas fa-times me-1"></i>No</span>
+                  {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <td class="fw-bold" style="color:var(--text-muted);"><i class="fas fa-gauge me-2"></i>Threat Score</td>
+                <td>
+                  <div class="progress" style="height: 22px;">
+                    <div class="progress-bar {% if result.is_malicious %}bg-danger{% else %}bg-success{% endif %}"
+                         style="width: {{ result.threat_score }}%">{{ result.threat_score }}%</div>
+                  </div>
+                </td>
+              </tr>
+              {% if result.suspicious_indicators %}
+              <tr>
+                <td class="fw-bold" style="color:var(--text-muted);"><i class="fas fa-flag me-2"></i>Indicators</td>
+                <td>
+                  <div class="d-flex flex-wrap gap-1">
+                    {% for indicator in result.suspicious_indicators %}
+                    <span class="badge bg-warning">{{ indicator }}</span>
+                    {% endfor %}
+                  </div>
+                </td>
+              </tr>
+              {% endif %}
+            </table>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="d-flex flex-wrap justify-content-center gap-2 mb-3">
+          <a href="{{ url_for('scanner.url_scan') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-rotate-right me-1"></i> Check Another URL
+          </a>
+          {% if current_user.is_authenticated and result.scan_id %}
+          <a href="{{ url_for('scanner.download_pdf', scan_type='url', scan_id=result.scan_id) }}"
+             class="btn btn-outline-danger btn-lg">
+            <i class="fas fa-file-pdf me-1"></i> Download PDF
+          </a>
+          <button class="btn btn-outline-success btn-lg" data-bs-toggle="collapse" data-bs-target="#emailReportForm">
+            <i class="fas fa-envelope me-1"></i> Email Report
+          </button>
+          {% endif %}
+        </div>
+
+        {% if current_user.is_authenticated and result.scan_id %}
+        <div class="collapse mt-3" id="emailReportForm">
+          <div class="card card-body">
+            <form method="post" action="{{ url_for('scanner.send_email_report', scan_type='url', scan_id=result.scan_id) }}">
+              <div class="input-group">
+                <input type="email" name="recipient_email" class="form-control"
+                       placeholder="Recipient email" value="{{ current_user.email }}">
+                <div class="input-group-text">
+                  <input class="form-check-input me-1" type="checkbox" name="attach_pdf" value="1" checked>
+                  Attach PDF
+                </div>
+                <button class="btn btn-success" type="submit">
+                  <i class="fas fa-paper-plane"></i> Send
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        {% endif %}
+
+      {% else %}
+        <div class="alert alert-danger">
+          <h5><i class="fas fa-triangle-exclamation me-2"></i>Scan Error</h5>
+          <p class="mb-0">{{ result.error }}</p>
+        </div>
+        <a href="{{ url_for('scanner.url_scan') }}" class="btn btn-primary">
+          <i class="fas fa-arrow-left me-1"></i> Try Again
+        </a>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}

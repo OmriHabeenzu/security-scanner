@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+
+{% block title %}Security Analytics{% endblock %}
+
+{% block head %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-chart-bar me-2" style="color:var(--cyan)"></i> Security Analytics Dashboard
+            </h2>
+        </div>
+    </div>
+    
+    <!-- Chart Grid -->
+    <div class="row">
+        <!-- Scan Distribution Pie Chart -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Scan Distribution by Type</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="scanDistributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Security Status Doughnut -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Overall Security Status</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="securityStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Threat Detection Bar Chart -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">Threats Detected by Vector</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="threatDetectionChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ML Performance -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">ML Model Accuracy</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="mlPerformanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Scan Timeline -->
+        <div class="col-12 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">Scan Activity Timeline (Last 7 Days)</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="scanTimelineChart" style="height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4 mb-5">
+        <div class="col-12">
+            <a href="{{ url_for('scanner.user_dashboard') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Chart.js Configuration — dark theme
+    Chart.defaults.font.family = "'Inter', 'Segoe UI', sans-serif";
+    Chart.defaults.color = 'rgba(255,255,255,0.55)';
+    Chart.defaults.borderColor = 'rgba(0,212,255,0.12)';
+    Chart.defaults.scale.grid = { color: 'rgba(255,255,255,0.06)' };
+    
+    const colors = {
+        primary: '#00d4ff',
+        success: '#10b981',
+        danger: '#ef4444',
+        warning: '#f59e0b',
+        info: '#06b6d4',
+        purple: '#7c3aed'
+    };
+    
+    // Initialize with loading state
+    let scanDistChart, threatDetChart, timelineChart, statusChart, mlPerfChart;
+    
+    // 1. Scan Distribution Pie Chart
+    const scanDistCtx = document.getElementById('scanDistributionChart').getContext('2d');
+    scanDistChart = new Chart(scanDistCtx, {
+        type: 'pie',
+        data: {
+            labels: ['File Scans', 'Email Scans', 'URL Scans', 'IP Scans'],
+            datasets: [{
+                data: [0, 0, 0, 0],
+                backgroundColor: [colors.primary, colors.success, colors.warning, colors.info],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'right' },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let value = context.parsed || 0;
+                            let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            let percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                            return `${context.label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // 2. Threat Detection Bar Chart
+    const threatDetCtx = document.getElementById('threatDetectionChart').getContext('2d');
+    threatDetChart = new Chart(threatDetCtx, {
+        type: 'bar',
+        data: {
+            labels: ['File', 'Email', 'URL', 'IP'],
+            datasets: [{
+                label: 'Threats',
+                data: [0, 0, 0, 0],
+                backgroundColor: colors.danger
+            }, {
+                label: 'Clean',
+                data: [0, 0, 0, 0],
+                backgroundColor: colors.success
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+    
+    // 3. Security Status Doughnut
+    const statusCtx = document.getElementById('securityStatusChart').getContext('2d');
+    statusChart = new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Clean', 'Threats'],
+            datasets: [{
+                data: [100, 0],
+                backgroundColor: [colors.success, colors.danger],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            cutout: '60%',
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.label}: ${context.parsed}%`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // 4. ML Performance
+    const mlPerfCtx = document.getElementById('mlPerformanceChart').getContext('2d');
+    mlPerfChart = new Chart(mlPerfCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Random Forest', 'Decision Tree', 'SVM'],
+            datasets: [{
+                label: 'Accuracy (%)',
+                data: [100.0, 99.92, 100.0],
+                backgroundColor: [colors.primary, colors.success, colors.purple]
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: { callback: value => value + '%' }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: context => 'Accuracy: ' + context.parsed.y + '%'
+                    }
+                }
+            }
+        }
+    });
+    
+    // 5. Timeline Chart
+    const timelineCtx = document.getElementById('scanTimelineChart').getContext('2d');
+    timelineChart = new Chart(timelineCtx, {
+        type: 'line',
+        data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+                label: 'Total Scans',
+                data: [0, 0, 0, 0, 0, 0, 0],
+                borderColor: colors.primary,
+                backgroundColor: colors.primary + '20',
+                tension: 0.4,
+                fill: true
+            }, {
+                label: 'Threats',
+                data: [0, 0, 0, 0, 0, 0, 0],
+                borderColor: colors.danger,
+                backgroundColor: colors.danger + '20',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+    
+    // Fetch and update data
+    fetch('/api/dashboard/stats')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update scan distribution
+                scanDistChart.data.datasets[0].data = [
+                    data.file_scans,
+                    data.email_scans,
+                    data.url_scans,
+                    data.ip_scans
+                ];
+                scanDistChart.update();
+                
+                // Update threat detection
+                threatDetChart.data.datasets[0].data = data.threats_by_type;
+                threatDetChart.data.datasets[1].data = data.clean_by_type;
+                threatDetChart.update();
+                
+                // Update status
+                statusChart.data.datasets[0].data = [
+                    data.clean_percentage,
+                    data.threat_percentage
+                ];
+                statusChart.update();
+                
+                // Update timeline
+                if (data.timeline) {
+                    timelineChart.data.labels = data.timeline.labels;
+                    timelineChart.data.datasets[0].data = data.timeline.scans;
+                    timelineChart.data.datasets[1].data = data.timeline.threats;
+                    timelineChart.update();
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching stats:', error);
+        });
+</script>
+{% endblock %}

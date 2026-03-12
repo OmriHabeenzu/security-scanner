@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Login — SecureCheck{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 4rem; padding-bottom: 4rem;">
+  <div class="row justify-content-center">
+    <div class="col-md-5 col-lg-4">
+
+      <div class="auth-card">
+        <div class="text-center mb-4">
+          <i class="fas fa-shield-halved" style="font-size: 2.8rem; color: var(--cyan); filter: drop-shadow(0 0 14px rgba(0,212,255,0.6));"></i>
+          <div class="auth-logo mt-3">Welcome Back</div>
+          <p class="text-muted" style="font-size: 0.88rem;">Login to access your security dashboard</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.login') }}">
+          <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-user"></i></span>
+              <input type="text" class="form-control" id="username" name="username"
+                     placeholder="Enter your username" required autofocus>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-lock"></i></span>
+              <input type="password" class="form-control" id="password" name="password"
+                     placeholder="Enter your password" required>
+            </div>
+          </div>
+
+          <div class="mb-4 form-check">
+            <input type="checkbox" class="form-check-input" id="remember" name="remember">
+            <label class="form-check-label" for="remember" style="font-size: 0.88rem;">Remember me</label>
+          </div>
+
+          <div class="d-grid mb-4">
+            <button type="submit" class="btn btn-primary btn-lg">
+              <i class="fas fa-right-to-bracket me-1"></i> Login
+            </button>
+          </div>
+
+          <p class="text-center mb-0" style="font-size: 0.88rem; color: var(--text-muted);">
+            Don't have an account?
+            <a href="{{ url_for('auth.register') }}" style="color: var(--cyan);">Register here</a>
+          </p>
+        </form>
+      </div>
+
+      <!-- Guest option -->
+      <div class="text-center mt-4">
+        <p style="font-size: 0.85rem; color: var(--text-faint);">Just want a quick scan?</p>
+        <a href="{{ url_for('scanner.file_scan') }}" class="btn btn-outline-secondary btn-sm">
+          Continue as Guest <i class="fas fa-arrow-right ms-1"></i>
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

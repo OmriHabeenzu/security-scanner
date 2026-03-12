@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}Scan History — SecureCheck{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+      <span class="section-label"><i class="fas fa-clock-rotate-left me-1"></i> History</span>
+      <h2 class="mt-1 mb-0">Scan History</h2>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('scanner.analytics_dashboard') }}" class="btn btn-outline-primary">
+        <i class="fas fa-chart-bar me-1"></i> Analytics
+      </a>
+      <a href="{{ url_for('scanner.user_dashboard') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <ul class="nav nav-tabs mb-0" role="tablist">
+    <li class="nav-item">
+      <a class="nav-link active" data-bs-toggle="tab" href="#file-scans">
+        <i class="fas fa-file-shield me-1"></i> Files
+        <span class="badge bg-secondary ms-1">{{ file_scans|length }}</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-bs-toggle="tab" href="#email-scans">
+        <i class="fas fa-envelope me-1"></i> Emails
+        <span class="badge bg-secondary ms-1">{{ email_scans|length }}</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-bs-toggle="tab" href="#url-scans">
+        <i class="fas fa-link me-1"></i> URLs
+        <span class="badge bg-secondary ms-1">{{ url_scans|length }}</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-bs-toggle="tab" href="#ip-scans">
+        <i class="fas fa-globe me-1"></i> IPs
+        <span class="badge bg-secondary ms-1">{{ ip_scans|length }}</span>
+      </a>
+    </li>
+  </ul>
+
+  <div class="tab-content">
+
+    <!-- File Scans -->
+    <div id="file-scans" class="tab-pane fade show active">
+      {% if file_scans %}
+      <div class="table-responsive">
+        <table class="table table-hover history-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Filename</th>
+              <th>Status</th>
+              <th>Confidence</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for scan in file_scans %}
+            <tr>
+              <td class="text-muted">{{ scan.scan_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+              <td><i class="fas fa-file me-1" style="color:var(--cyan)"></i>{{ scan.filename }}</td>
+              <td>
+                {% if scan.is_malicious %}
+                <span class="badge bg-danger">MALICIOUS</span>
+                {% else %}
+                <span class="badge bg-success">CLEAN</span>
+                {% endif %}
+              </td>
+              <td>{{ scan.confidence_score }}%</td>
+              <td>
+                <a href="{{ url_for('scanner.download_pdf', scan_type='file', scan_id=scan.id) }}"
+                   class="btn btn-sm btn-outline-danger">
+                  <i class="fas fa-file-pdf me-1"></i> PDF
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="alert alert-info mt-3">No file scans yet.</div>
+      {% endif %}
+    </div>
+
+    <!-- Email Scans -->
+    <div id="email-scans" class="tab-pane fade">
+      {% if email_scans %}
+      <div class="table-responsive">
+        <table class="table table-hover history-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>From</th>
+              <th>Subject</th>
+              <th>Status</th>
+              <th>Score</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for scan in email_scans %}
+            <tr>
+              <td class="text-muted">{{ scan.scan_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+              <td>{{ scan.sender_email }}</td>
+              <td>{{ scan.subject[:50] }}…</td>
+              <td>
+                {% if scan.is_phishing %}
+                <span class="badge bg-danger">PHISHING</span>
+                {% else %}
+                <span class="badge bg-success">SAFE</span>
+                {% endif %}
+              </td>
+              <td>{{ scan.phishing_score }}%</td>
+              <td>
+                <a href="{{ url_for('scanner.download_pdf', scan_type='email', scan_id=scan.id) }}"
+                   class="btn btn-sm btn-outline-danger">
+                  <i class="fas fa-file-pdf me-1"></i> PDF
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="alert alert-info mt-3">No email scans yet.</div>
+      {% endif %}
+    </div>
+
+    <!-- URL Scans -->
+    <div id="url-scans" class="tab-pane fade">
+      {% if url_scans %}
+      <div class="table-responsive">
+        <table class="table table-hover history-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>URL</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for scan in url_scans %}
+            <tr>
+              <td class="text-muted">{{ scan.scan_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+              <td style="word-break:break-all; max-width:300px;">{{ scan.url[:80] }}{% if scan.url|length > 80 %}…{% endif %}</td>
+              <td>
+                {% if scan.is_safe %}
+                <span class="badge bg-success">SAFE</span>
+                {% else %}
+                <span class="badge bg-warning">SUSPICIOUS</span>
+                {% endif %}
+              </td>
+              <td>
+                <a href="{{ url_for('scanner.download_pdf', scan_type='url', scan_id=scan.id) }}"
+                   class="btn btn-sm btn-outline-danger">
+                  <i class="fas fa-file-pdf me-1"></i> PDF
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="alert alert-info mt-3">No URL scans yet.</div>
+      {% endif %}
+    </div>
+
+    <!-- IP Scans -->
+    <div id="ip-scans" class="tab-pane fade">
+      {% if ip_scans %}
+      <div class="table-responsive">
+        <table class="table table-hover history-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>IP Address</th>
+              <th>Country</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for scan in ip_scans %}
+            <tr>
+              <td class="text-muted">{{ scan.scan_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+              <td><code style="color:var(--cyan)">{{ scan.ip_address }}</code></td>
+              <td>{{ scan.country }}</td>
+              <td>
+                {% if scan.is_safe %}
+                <span class="badge bg-success">CLEAN</span>
+                {% else %}
+                <span class="badge bg-warning">SUSPICIOUS</span>
+                {% endif %}
+              </td>
+              <td>
+                <a href="{{ url_for('scanner.download_pdf', scan_type='ip', scan_id=scan.id) }}"
+                   class="btn btn-sm btn-outline-danger">
+                  <i class="fas fa-file-pdf me-1"></i> PDF
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="alert alert-info mt-3">No IP scans yet.</div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}Email Analysis Results — SecureCheck{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+
+      <div class="page-header">
+        <h2>Email Security Analysis</h2>
+        <div class="accent-line"></div>
+      </div>
+
+      {% if result.success %}
+
+        <!-- Status Hero -->
+        <div class="card mb-4 text-center">
+          <div class="card-body p-5">
+            {% if result.is_phishing %}
+              <i class="fas fa-triangle-exclamation result-icon text-danger"></i>
+              <h3 class="mt-3 text-danger">Potential Phishing Detected!</h3>
+              <p class="text-muted mb-3">This email shows signs of phishing</p>
+              <div class="progress mt-3 mx-auto" style="height: 28px; max-width: 400px;">
+                <div class="progress-bar bg-danger" style="width: {{ result.phishing_score }}%">
+                  Phishing Score: {{ result.phishing_score }}%
+                </div>
+              </div>
+            {% else %}
+              <i class="fas fa-shield-halved result-icon text-success"></i>
+              <h3 class="mt-3 text-success">Email Appears Safe</h3>
+              <p class="text-muted mb-3">No major phishing indicators detected</p>
+              <div class="progress mt-3 mx-auto" style="height: 28px; max-width: 400px;">
+                <div class="progress-bar bg-success" style="width: {{ 100 - result.phishing_score }}%">
+                  Safety Score: {{ 100 - result.phishing_score }}%
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Email Details -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <i class="fas fa-envelope me-2" style="color:var(--cyan)"></i>Email Details
+          </div>
+          <div class="card-body">
+            <table class="table table-borderless mb-0">
+              <tr>
+                <td class="fw-bold" style="width:25%; color:var(--text-muted);"><i class="fas fa-user me-2"></i>From</td>
+                <td>{{ result.sender_email }}</td>
+              </tr>
+              <tr>
+                <td class="fw-bold" style="color:var(--text-muted);"><i class="fas fa-heading me-2"></i>Subject</td>
+                <td>{{ result.subject }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Authentication Results -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <i class="fas fa-key me-2" style="color:var(--cyan)"></i>Authentication Checks
+          </div>
+          <div class="card-body">
+            <div class="row g-3 text-center">
+              {% for protocol, status_key in [('DKIM', result.dkim_status), ('SPF', result.spf_status), ('DMARC', result.dmarc_status)] %}
+              <div class="col-md-4">
+                <div class="p-3" style="border: 1px solid var(--border); border-radius: var(--radius);">
+                  <p class="fw-bold mb-2" style="font-family:'Space Grotesk',sans-serif;">{{ protocol }}</p>
+                  {% if status_key == 'pass' %}
+                    <span class="badge bg-success" style="font-size:0.9rem; padding:0.45em 1em;">
+                      <i class="fas fa-check me-1"></i>Pass
+                    </span>
+                  {% elif status_key == 'fail' %}
+                    <span class="badge bg-danger" style="font-size:0.9rem; padding:0.45em 1em;">
+                      <i class="fas fa-times me-1"></i>Fail
+                    </span>
+                  {% else %}
+                    <span class="badge bg-secondary" style="font-size:0.9rem; padding:0.45em 1em;">
+                      <i class="fas fa-question me-1"></i>None
+                    </span>
+                  {% endif %}
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Security Indicators -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <i class="fas fa-flag me-2" style="color:var(--amber)"></i>Security Indicators
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <p class="mb-2">
+                  <i class="fas fa-link me-2" style="color:var(--cyan)"></i>
+                  <strong>Suspicious Links:</strong> {{ result.suspicious_links }}
+                </p>
+                <p class="mb-2">
+                  <i class="fas fa-list me-2" style="color:var(--cyan)"></i>
+                  <strong>Total Links:</strong> {{ result.total_links }}
+                </p>
+              </div>
+              <div class="col-md-6">
+                {% if result.suspicious_keywords %}
+                <p class="mb-2"><i class="fas fa-flag me-2" style="color:var(--red)"></i><strong>Suspicious Keywords:</strong></p>
+                <div class="d-flex flex-wrap gap-1">
+                  {% for kw in result.suspicious_keywords %}
+                  <span class="badge bg-warning">{{ kw }}</span>
+                  {% endfor %}
+                </div>
+                {% else %}
+                <p class="mb-0 text-success">
+                  <i class="fas fa-check-circle me-2"></i>No suspicious keywords detected
+                </p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="d-flex flex-wrap justify-content-center gap-2 mb-3">
+          <a href="{{ url_for('scanner.email_scan') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-rotate-right me-1"></i> Analyse Another Email
+          </a>
+          {% if current_user.is_authenticated and result.scan_id %}
+          <a href="{{ url_for('scanner.download_pdf', scan_type='email', scan_id=result.scan_id) }}"
+             class="btn btn-outline-danger btn-lg">
+            <i class="fas fa-file-pdf me-1"></i> Download PDF
+          </a>
+          <button class="btn btn-outline-success btn-lg" data-bs-toggle="collapse" data-bs-target="#emailReportForm">
+            <i class="fas fa-envelope me-1"></i> Email Report
+          </button>
+          <a href="{{ url_for('scanner.scan_history') }}" class="btn btn-outline-secondary btn-lg">
+            <i class="fas fa-clock-rotate-left me-1"></i> History
+          </a>
+          {% endif %}
+        </div>
+
+        {% if current_user.is_authenticated and result.scan_id %}
+        <div class="collapse mt-3" id="emailReportForm">
+          <div class="card card-body">
+            <form method="post" action="{{ url_for('scanner.send_email_report', scan_type='email', scan_id=result.scan_id) }}">
+              <div class="input-group">
+                <input type="email" name="recipient_email" class="form-control"
+                       placeholder="Recipient email" value="{{ current_user.email }}">
+                <div class="input-group-text">
+                  <input class="form-check-input me-1" type="checkbox" name="attach_pdf" value="1" checked>
+                  Attach PDF
+                </div>
+                <button class="btn btn-success" type="submit">
+                  <i class="fas fa-paper-plane"></i> Send
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        {% endif %}
+
+        {% if not current_user.is_authenticated %}
+        <div class="alert alert-info mt-4">
+          <i class="fas fa-user-plus me-2"></i>
+          <strong>Save your results!</strong>
+          <a href="{{ url_for('auth.register') }}" class="alert-link">Register for free</a>
+          to track all your email scans.
+        </div>
+        {% endif %}
+
+      {% else %}
+        <div class="alert alert-danger">
+          <h5><i class="fas fa-triangle-exclamation me-2"></i>Analysis Error</h5>
+          <p class="mb-0">{{ result.error }}</p>
+        </div>
+        <a href="{{ url_for('scanner.email_scan') }}" class="btn btn-primary">
+          <i class="fas fa-arrow-left me-1"></i> Try Again
+        </a>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}

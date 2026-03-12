@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Batch Scan Results — SecureCheck{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+
+  <!-- Header -->
+  <div class="page-header">
+    <h2>Batch Scan Results</h2>
+    <div class="accent-line"></div>
+  </div>
+
+  <!-- Summary Stats -->
+  <div class="row g-4 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="stat-card text-center">
+        <div class="stat-number">{{ summary.total }}</div>
+        <div class="stat-label">Total Files</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card text-center">
+        <div class="stat-number" style="color: #34d399;">{{ summary.clean }}</div>
+        <div class="stat-label">Clean Files</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card text-center">
+        <div class="stat-number" style="color: #f87171;">{{ summary.malicious }}</div>
+        <div class="stat-label">Threats Found</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="stat-card text-center">
+        <div class="stat-number" style="color: #fbbf24;">{{ summary.threat_rate }}%</div>
+        <div class="stat-label">Threat Rate</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overall Status Alert -->
+  {% if summary.malicious > 0 %}
+  <div class="alert alert-danger mb-4">
+    <h5 class="mb-1"><i class="fas fa-triangle-exclamation me-2"></i>Security Alert!</h5>
+    <p class="mb-0">{{ summary.malicious }} malicious file(s) detected. Review individual results below.</p>
+  </div>
+  {% else %}
+  <div class="alert alert-success mb-4">
+    <h5 class="mb-1"><i class="fas fa-circle-check me-2"></i>All Clear!</h5>
+    <p class="mb-0">All {{ summary.total }} files are clean. No threats detected.</p>
+  </div>
+  {% endif %}
+
+  <!-- Individual Results -->
+  <h5 class="mb-3"><i class="fas fa-list me-2" style="color:var(--cyan)"></i>Individual File Results</h5>
+
+  {% for result in results %}
+  <div class="card mb-3 scan-result {% if result.is_malicious %}threat{% elif not result.success %}warning{% else %}clean{% endif %}">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span>
+        <i class="fas fa-file me-2" style="color:var(--cyan)"></i>{{ result.filename }}
+      </span>
+      {% if result.success %}
+        {% if result.is_malicious %}
+        <span class="badge bg-danger">MALICIOUS</span>
+        {% else %}
+        <span class="badge bg-success">CLEAN</span>
+        {% endif %}
+      {% else %}
+      <span class="badge bg-warning">ERROR</span>
+      {% endif %}
+    </div>
+
+    <div class="card-body">
+      {% if result.success %}
+      <div class="row">
+        <div class="col-md-6">
+          <p class="mb-1 small"><span class="text-muted">File Size:</span> {{ result.file_size }}</p>
+          <p class="mb-1 small"><span class="text-muted">File Type:</span> {{ result.file_type }}</p>
+          <p class="mb-1 small"><span class="text-muted">Confidence:</span> {{ result.confidence_score }}%</p>
+        </div>
+        <div class="col-md-6">
+          {% if result.is_malicious %}
+          <p class="mb-1 small"><span class="text-muted">Threat Level:</span> <span class="text-danger">{{ result.threat_level }}</span></p>
+          <p class="mb-1 small"><span class="text-muted">Malware Type:</span> {{ result.malware_type }}</p>
+          {% endif %}
+          <p class="mb-1 small"><span class="text-muted">SHA-256:</span> <code style="color:var(--cyan); font-size:0.78rem;">{{ result.file_hash[:32] }}…</code></p>
+        </div>
+      </div>
+      {% if result.is_malicious %}
+      <div class="alert alert-danger mt-3 mb-0">
+        <i class="fas fa-shield-exclamation me-2"></i>
+        <strong>Warning:</strong> This file is malicious. Do not open or execute it.
+      </div>
+      {% endif %}
+      {% else %}
+      <p class="text-danger mb-0 small">
+        <i class="fas fa-circle-xmark me-1"></i> Error: {{ result.error }}
+      </p>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+
+  <!-- Actions -->
+  <div class="d-flex flex-wrap gap-2 mt-4">
+    <a href="{{ url_for('scanner.file_batch_scan') }}" class="btn btn-primary">
+      <i class="fas fa-rotate-right me-1"></i> Scan More Files
+    </a>
+    <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+      <i class="fas fa-house me-1"></i> Home
+    </a>
+    {% if current_user.is_authenticated %}
+    <a href="{{ url_for('scanner.scan_history') }}" class="btn btn-outline-primary">
+      <i class="fas fa-clock-rotate-left me-1"></i> View History
+    </a>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
