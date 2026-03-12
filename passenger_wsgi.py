@@ -2,7 +2,7 @@ import sys
 import os
 
 # Add project root to Python path
-INTERP = os.path.expanduser('/home/omrihabeenzu/virtualenv/security_scanner/3.11/bin/python3')
+INTERP = os.path.expanduser('/home/omrihabeenzu/virtualenv/public_html/security-scanner/3.11/bin/python3')
 if sys.executable != INTERP:
     os.execl(INTERP, INTERP, *sys.argv)
 
