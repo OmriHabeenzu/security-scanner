@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% block title %}IP Check Results — SecureCheck{% endblock %}
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+
+      <div class="page-header">
+        <h2>IP Reputation Check Results</h2>
+        <div class="accent-line"></div>
+      </div>
+
+      {% if result.success %}
+        {% if result.get('is_private') %}
+          <div class="alert alert-info">
+            <h5><i class="fas fa-house-lock me-2"></i>Private IP Address</h5>
+            <p class="mb-0">This is an internal/private IP address — no public threat data available.</p>
+          </div>
+        {% else %}
+
+          <!-- Status Hero -->
+          <div class="card mb-4 text-center">
+            <div class="card-body p-5">
+              {% if result.is_malicious %}
+                <i class="fas fa-triangle-exclamation result-icon text-danger"></i>
+                <h3 class="mt-3 text-danger">High Abuse Score!</h3>
+                <p class="text-muted mb-3">This IP has significant abuse reports</p>
+              {% else %}
+                <i class="fas fa-circle-check result-icon text-success"></i>
+                <h3 class="mt-3 text-success">Low Abuse Score</h3>
+                <p class="text-muted mb-3">No significant abuse history detected</p>
+              {% endif %}
+              <div class="progress mt-3 mx-auto" style="height: 28px; max-width: 400px;">
+                <div class="progress-bar {% if result.abuse_score > 75 %}bg-danger{% elif result.abuse_score > 50 %}bg-warning{% else %}bg-success{% endif %}"
+                     style="width: {{ result.abuse_score }}%">
+                  Abuse Score: {{ result.abuse_score }}/100
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- IP Information -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <i class="fas fa-circle-info me-2" style="color:var(--cyan)"></i>IP Information
+            </div>
+            <div class="card-body">
+              <table class="table table-borderless mb-0">
+                <tr>
+                  <td class="fw-bold" style="width:35%; color:var(--text-muted);"><i class="fas fa-server me-2"></i>IP Address</td>
+                  <td><code style="color:var(--cyan)">{{ result.ip_address }}</code></td>
+                </tr>
+                <tr>
+                  <td class="fw-bold" style="color:var(--text-muted);"><i class="fas fa-network-wired me-2"></i>Hostname</td>
+                  <td>{{ result.hostname }}</td>
+                </tr>
+                <tr>
+                  <td class="fw-bold" style="color:var(--text-muted);"><i class="fas fa-hashtag me-2"></i>ASN</td>
+                  <td>{{ result.asn }}</td>
+                </tr>
+                <tr>
+                  <td class="fw-bold" style="color:var(--text-muted);"><i class="fas fa-building me-2"></i>ISP</td>
+                  <td>{{ result.isp }}</td>
+                </tr>
+                <tr>
+                  <td class="fw-bold" style="color:var(--text-muted);"><i class="fas fa-tag me-2"></i>Usage Type</td>
+                  <td><span class="badge bg-info">{{ result.usage_type }}</span></td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+          <!-- Geolocation -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <i class="fas fa-map-location-dot me-2" style="color:var(--green)"></i>Geolocation
+            </div>
+            <div class="card-body">
+              <table class="table table-borderless mb-0">
+                <tr>
+                  <td class="fw-bold" style="width:35%; color:var(--text-muted);"><i class="fas fa-flag me-2"></i>Country</td>
+                  <td>{{ result.country }}</td>
+                </tr>
+                <tr>
+                  <td class="fw-bold" style="color:var(--text-muted);"><i class="fas fa-map-marker-alt me-2"></i>State / Region</td>
+                  <td>{{ result.region }}</td>
+                </tr>
+                <tr>
+                  <td class="fw-bold" style="color:var(--text-muted);"><i class="fas fa-city me-2"></i>City</td>
+                  <td>{{ result.city }}</td>
+                </tr>
+                <tr>
+                  <td class="fw-bold" style="color:var(--text-muted);"><i class="fas fa-compass me-2"></i>Coordinates</td>
+                  <td>
+                    {{ "%.4f"|format(result.latitude) }}°{% if result.latitude >= 0 %}N{% else %}S{% endif %},
+                    {{ "%.4f"|format(result.longitude) }}°{% if result.longitude >= 0 %}E{% else %}W{% endif %}
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+          <!-- Security Info -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <i class="fas fa-shield-halved me-2" style="color:var(--amber)"></i>Security Information
+            </div>
+            <div class="card-body">
+              <table class="table table-borderless mb-0">
+                <tr>
+                  <td class="fw-bold" style="width:35%; color:var(--text-muted);"><i class="fas fa-triangle-exclamation me-2"></i>Total Reports</td>
+                  <td><span class="badge bg-secondary" style="font-size:0.9rem;">{{ result.total_reports }}</span></td>
+                </tr>
+                <tr>
+                  <td class="fw-bold" style="color:var(--text-muted);"><i class="fas fa-clock me-2"></i>Last Reported</td>
+                  <td>{{ result.last_reported }}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="d-flex flex-wrap justify-content-center gap-2 mb-3">
+          <a href="{{ url_for('scanner.ip_scan') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-rotate-right me-1"></i> Check Another IP
+          </a>
+          {% if current_user.is_authenticated and result.scan_id %}
+          <a href="{{ url_for('scanner.download_pdf', scan_type='ip', scan_id=result.scan_id) }}"
+             class="btn btn-outline-danger btn-lg">
+            <i class="fas fa-file-pdf me-1"></i> Download PDF
+          </a>
+          <button class="btn btn-outline-success btn-lg" data-bs-toggle="collapse" data-bs-target="#emailReportForm">
+            <i class="fas fa-envelope me-1"></i> Email Report
+          </button>
+          {% endif %}
+        </div>
+
+        {% if current_user.is_authenticated and result.scan_id %}
+        <div class="collapse mt-3" id="emailReportForm">
+          <div class="card card-body">
+            <form method="post" action="{{ url_for('scanner.send_email_report', scan_type='ip', scan_id=result.scan_id) }}">
+              <div class="input-group">
+                <input type="email" name="recipient_email" class="form-control"
+                       placeholder="Recipient email" value="{{ current_user.email }}">
+                <div class="input-group-text">
+                  <input class="form-check-input me-1" type="checkbox" name="attach_pdf" value="1" checked>
+                  Attach PDF
+                </div>
+                <button class="btn btn-success" type="submit">
+                  <i class="fas fa-paper-plane"></i> Send
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        {% endif %}
+
+      {% else %}
+        <div class="alert alert-danger">
+          <p class="mb-0"><i class="fas fa-circle-exclamation me-2"></i>{{ result.error }}</p>
+        </div>
+        <a href="{{ url_for('scanner.ip_scan') }}" class="btn btn-primary">
+          <i class="fas fa-arrow-left me-1"></i> Try Again
+        </a>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}

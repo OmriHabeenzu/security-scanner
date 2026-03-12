@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Register — SecureCheck{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 4rem; padding-bottom: 4rem;">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+
+      <div class="auth-card" style="max-width: 520px;">
+        <div class="text-center mb-4">
+          <i class="fas fa-user-plus" style="font-size: 2.8rem; color: var(--cyan); filter: drop-shadow(0 0 14px rgba(0,212,255,0.6));"></i>
+          <div class="auth-logo mt-3">Create Account</div>
+          <p class="text-muted" style="font-size: 0.88rem;">Join SecureCheck for unlimited scanning &amp; history</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.register') }}">
+          <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-user"></i></span>
+              <input type="text" class="form-control" id="username" name="username"
+                     placeholder="Choose a username" required autofocus minlength="3">
+            </div>
+            <small class="form-text text-muted">Minimum 3 characters</small>
+          </div>
+
+          <div class="mb-3">
+            <label for="email" class="form-label">Email Address</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+              <input type="email" class="form-control" id="email" name="email"
+                     placeholder="your.email@example.com" required>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-lock"></i></span>
+              <input type="password" class="form-control" id="password" name="password"
+                     placeholder="Choose a strong password" required minlength="6">
+            </div>
+            <small class="form-text text-muted">Minimum 6 characters</small>
+          </div>
+
+          <div class="mb-4">
+            <label for="confirm_password" class="form-label">Confirm Password</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="fas fa-lock"></i></span>
+              <input type="password" class="form-control" id="confirm_password" name="confirm_password"
+                     placeholder="Re-enter your password" required minlength="6">
+            </div>
+          </div>
+
+          <!-- Benefits -->
+          <div class="alert alert-info mb-4">
+            <p class="small mb-2 fw-bold"><i class="fas fa-star me-1" style="color:var(--amber)"></i>Account Benefits</p>
+            <div class="row g-1 small">
+              <div class="col-6"><i class="fas fa-check me-1" style="color:var(--green)"></i>Unlimited scans</div>
+              <div class="col-6"><i class="fas fa-check me-1" style="color:var(--green)"></i>Scan history</div>
+              <div class="col-6"><i class="fas fa-check me-1" style="color:var(--green)"></i>PDF reports</div>
+              <div class="col-6"><i class="fas fa-check me-1" style="color:var(--green)"></i>Analytics dashboard</div>
+              <div class="col-6"><i class="fas fa-check me-1" style="color:var(--green)"></i>Email notifications</div>
+              <div class="col-6"><i class="fas fa-check me-1" style="color:var(--green)"></i>Batch file scanning</div>
+            </div>
+          </div>
+
+          <div class="d-grid mb-4">
+            <button type="submit" class="btn btn-primary btn-lg">
+              <i class="fas fa-user-plus me-1"></i> Create Account
+            </button>
+          </div>
+
+          <p class="text-center mb-0" style="font-size: 0.88rem; color: var(--text-muted);">
+            Already have an account?
+            <a href="{{ url_for('auth.login') }}" style="color: var(--cyan);">Login here</a>
+          </p>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('confirm_password').addEventListener('input', function() {
+  const pw = document.getElementById('password').value;
+  this.setCustomValidity(pw !== this.value ? 'Passwords do not match' : '');
+});
+</script>
+{% endblock %}

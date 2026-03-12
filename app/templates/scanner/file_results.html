@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}File Scan Results — SecureCheck{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+
+      <div class="page-header">
+        <h2>File Scan Results</h2>
+        <div class="accent-line"></div>
+      </div>
+
+      {% if multiple %}
+        <!-- Multiple Files -->
+        {% for result in results %}
+        <div class="card mb-3 scan-result {% if result.success and result.is_malicious %}threat{% elif result.success %}clean{% else %}warning{% endif %}">
+          <div class="card-body">
+            {% if result.success %}
+            <div class="row align-items-center">
+              <div class="col-md-8">
+                <h5 class="mb-1"><i class="fas fa-file me-2" style="color:var(--cyan)"></i>{{ result.filename }}</h5>
+                <p class="text-muted mb-0 small">{{ result.file_size }} &nbsp;·&nbsp; {{ result.file_type }}</p>
+              </div>
+              <div class="col-md-4 text-end">
+                {% if result.is_malicious %}
+                  <span class="badge bg-danger fs-6"><i class="fas fa-triangle-exclamation me-1"></i>{{ result.threat_level }}</span>
+                {% else %}
+                  <span class="badge bg-success fs-6"><i class="fas fa-check-circle me-1"></i>Clean</span>
+                {% endif %}
+              </div>
+            </div>
+            {% else %}
+            <div class="alert alert-danger mb-0">
+              <i class="fas fa-circle-exclamation me-2"></i>{{ result.error }}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+
+        <div class="text-center mt-4">
+          <a href="{{ url_for('scanner.file_scan') }}" class="btn btn-primary">
+            <i class="fas fa-arrow-left me-1"></i> Scan More Files
+          </a>
+        </div>
+
+      {% else %}
+        <!-- Single File -->
+        {% if result.success %}
+
+          <!-- Status Hero -->
+          <div class="card mb-4 text-center">
+            <div class="card-body p-5">
+              {% if result.is_malicious %}
+                <i class="fas fa-triangle-exclamation result-icon text-danger"></i>
+                <h3 class="mt-3 text-danger">Threat Detected!</h3>
+                <p class="text-muted mb-3">This file appears to be malicious</p>
+                <span class="badge bg-danger" style="font-size: 1rem; padding: 0.5em 1.4em;">{{ result.threat_level }} Risk</span>
+              {% else %}
+                <i class="fas fa-shield-check result-icon text-success"></i>
+                <h3 class="mt-3 text-success">File is Clean</h3>
+                <p class="text-muted mb-3">No threats detected by any model</p>
+                <span class="badge bg-success" style="font-size: 1rem; padding: 0.5em 1.4em;">Safe</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- File Details -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <i class="fas fa-circle-info me-2" style="color:var(--cyan)"></i>File Information
+            </div>
+            <div class="card-body">
+              <table class="table table-borderless mb-0">
+                <tr>
+                  <td class="fw-bold" style="width:38%; color: var(--text-muted);"><i class="fas fa-file me-2"></i>Filename</td>
+                  <td>{{ result.filename }}</td>
+                </tr>
+                <tr>
+                  <td class="fw-bold" style="color: var(--text-muted);"><i class="fas fa-fingerprint me-2"></i>SHA-256</td>
+                  <td><code class="small" style="color: var(--cyan); word-break: break-all;">{{ result.file_hash }}</code></td>
+                </tr>
+                <tr>
+                  <td class="fw-bold" style="color: var(--text-muted);"><i class="fas fa-hdd me-2"></i>File Size</td>
+                  <td>{{ result.file_size }}</td>
+                </tr>
+                <tr>
+                  <td class="fw-bold" style="color: var(--text-muted);"><i class="fas fa-tag me-2"></i>File Type</td>
+                  <td>{{ result.file_type }}</td>
+                </tr>
+                {% if result.is_malicious %}
+                <tr>
+                  <td class="fw-bold" style="color: var(--text-muted);"><i class="fas fa-virus me-2"></i>Malware Type</td>
+                  <td><span class="badge bg-warning">{{ result.malware_type }}</span></td>
+                </tr>
+                {% endif %}
+                <tr>
+                  <td class="fw-bold" style="color: var(--text-muted);"><i class="fas fa-percent me-2"></i>Confidence</td>
+                  <td style="width:62%">
+                    <div class="progress" style="height: 22px;">
+                      <div class="progress-bar {% if result.is_malicious %}bg-danger{% else %}bg-success{% endif %}"
+                           style="width: {{ result.confidence_score }}%">
+                        {{ result.confidence_score }}%
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="d-flex flex-wrap justify-content-center gap-2 mb-3">
+            <a href="{{ url_for('scanner.file_scan') }}" class="btn btn-primary btn-lg">
+              <i class="fas fa-rotate-right me-1"></i> Scan Another File
+            </a>
+            {% if current_user.is_authenticated and result.scan_id %}
+            <a href="{{ url_for('scanner.download_pdf', scan_type='file', scan_id=result.scan_id) }}"
+               class="btn btn-outline-danger btn-lg">
+              <i class="fas fa-file-pdf me-1"></i> Download PDF
+            </a>
+            <button class="btn btn-outline-success btn-lg" data-bs-toggle="collapse" data-bs-target="#emailReportForm">
+              <i class="fas fa-envelope me-1"></i> Email Report
+            </button>
+            <a href="{{ url_for('scanner.scan_history') }}" class="btn btn-outline-secondary btn-lg">
+              <i class="fas fa-clock-rotate-left me-1"></i> History
+            </a>
+            {% endif %}
+          </div>
+
+          {% if current_user.is_authenticated and result.scan_id %}
+          <div class="collapse mt-3" id="emailReportForm">
+            <div class="card card-body">
+              <form method="post" action="{{ url_for('scanner.send_email_report', scan_type='file', scan_id=result.scan_id) }}">
+                <div class="input-group">
+                  <input type="email" name="recipient_email" class="form-control"
+                         placeholder="Recipient email" value="{{ current_user.email }}">
+                  <div class="input-group-text">
+                    <input class="form-check-input me-1" type="checkbox" name="attach_pdf" value="1" checked>
+                    Attach PDF
+                  </div>
+                  <button class="btn btn-success" type="submit">
+                    <i class="fas fa-paper-plane"></i> Send
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+          {% endif %}
+
+          {% if not current_user.is_authenticated %}
+          <div class="alert alert-info mt-4">
+            <i class="fas fa-user-plus me-2"></i>
+            <strong>Want to save results?</strong>
+            <a href="{{ url_for('auth.register') }}" class="alert-link">Create a free account</a>
+            to access scan history, PDF reports, and more!
+          </div>
+          {% endif %}
+
+        {% else %}
+          <div class="alert alert-danger">
+            <h5><i class="fas fa-triangle-exclamation me-2"></i>Scan Error</h5>
+            <p class="mb-0">{{ result.error }}</p>
+          </div>
+          <a href="{{ url_for('scanner.file_scan') }}" class="btn btn-primary">
+            <i class="fas fa-arrow-left me-1"></i> Try Again
+          </a>
+        {% endif %}
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}

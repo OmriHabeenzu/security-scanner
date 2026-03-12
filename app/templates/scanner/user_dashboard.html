@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}My Dashboard — SecureCheck{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+
+  <!-- Header -->
+  <div class="mb-5">
+    <span class="section-label"><i class="fas fa-gauge me-1"></i> Dashboard</span>
+    <h2 class="mt-1">Welcome back, {{ current_user.username }}!</h2>
+    <p class="text-muted">Your security scanning overview</p>
+  </div>
+
+  <!-- Stat Cards -->
+  <div class="row g-4 mb-5">
+    <div class="col-md-4">
+      <div class="stat-card">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="stat-number">{{ total_scans }}</div>
+            <div class="stat-label">Total Scans</div>
+          </div>
+          <i class="fas fa-magnifying-glass" style="font-size: 1.8rem; color: var(--cyan); opacity: 0.6;"></i>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stat-card">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="stat-number" style="color: #f87171;">{{ threats_found }}</div>
+            <div class="stat-label">Threats Found</div>
+          </div>
+          <i class="fas fa-triangle-exclamation" style="font-size: 1.8rem; color: var(--red); opacity: 0.6;"></i>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="stat-card">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="stat-number" style="color: #34d399;">{{ total_scans - threats_found }}</div>
+            <div class="stat-label">Clean Results</div>
+          </div>
+          <i class="fas fa-shield-halved" style="font-size: 1.8rem; color: var(--green); opacity: 0.6;"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Scan -->
+  <h5 class="mb-3"><i class="fas fa-bolt me-2" style="color:var(--cyan)"></i>Quick Scan</h5>
+  <div class="row g-3 mb-5">
+    <div class="col-md-3 col-6">
+      <a href="{{ url_for('scanner.file_scan') }}" class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center gap-2">
+        <i class="fas fa-file-shield fa-lg"></i>
+        <span>File Scanner</span>
+      </a>
+    </div>
+    <div class="col-md-3 col-6">
+      <a href="{{ url_for('scanner.email_scan') }}" class="btn btn-outline-success w-100 py-3 d-flex flex-column align-items-center gap-2">
+        <i class="fas fa-envelope-open-text fa-lg"></i>
+        <span>Email Analyzer</span>
+      </a>
+    </div>
+    <div class="col-md-3 col-6">
+      <a href="{{ url_for('scanner.url_scan') }}" class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center gap-2" style="border-color:var(--amber)!important; color:var(--amber)!important;">
+        <i class="fas fa-link fa-lg"></i>
+        <span>URL Scanner</span>
+      </a>
+    </div>
+    <div class="col-md-3 col-6">
+      <a href="{{ url_for('scanner.ip_scan') }}" class="btn btn-outline-danger w-100 py-3 d-flex flex-column align-items-center gap-2">
+        <i class="fas fa-globe fa-lg"></i>
+        <span>IP Checker</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Recent Scans -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0"><i class="fas fa-clock-rotate-left me-2" style="color:var(--cyan)"></i>Recent Scans</h5>
+    <a href="{{ url_for('scanner.scan_history') }}" class="btn btn-outline-secondary btn-sm">
+      View All <i class="fas fa-arrow-right ms-1"></i>
+    </a>
+  </div>
+
+  <div class="card">
+    <div class="card-body p-0">
+      {% if recent_file_scans or recent_email_scans or recent_url_scans or recent_ip_scans %}
+      <div class="table-responsive">
+        <table class="table table-hover history-table mb-0">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Target</th>
+              <th>Result</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for scan in recent_file_scans %}
+            <tr>
+              <td><span class="badge bg-primary">File</span></td>
+              <td>{{ scan.filename }}</td>
+              <td>
+                {% if scan.is_malicious %}
+                <span class="badge bg-danger">Malicious</span>
+                {% else %}
+                <span class="badge bg-success">Clean</span>
+                {% endif %}
+              </td>
+              <td class="text-muted">{{ scan.scan_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+            </tr>
+            {% endfor %}
+            {% for scan in recent_email_scans %}
+            <tr>
+              <td><span class="badge bg-success">Email</span></td>
+              <td>{{ scan.sender_email or 'N/A' }}</td>
+              <td>
+                {% if scan.is_phishing %}
+                <span class="badge bg-danger">Phishing</span>
+                {% else %}
+                <span class="badge bg-success">Safe</span>
+                {% endif %}
+              </td>
+              <td class="text-muted">{{ scan.scan_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+            </tr>
+            {% endfor %}
+            {% for scan in recent_url_scans %}
+            <tr>
+              <td><span class="badge bg-warning">URL</span></td>
+              <td style="word-break: break-all; max-width: 220px;">{{ scan.url[:60] }}{% if scan.url|length > 60 %}…{% endif %}</td>
+              <td>
+                {% if scan.is_malicious %}
+                <span class="badge bg-danger">Malicious</span>
+                {% else %}
+                <span class="badge bg-success">Safe</span>
+                {% endif %}
+              </td>
+              <td class="text-muted">{{ scan.scan_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+            </tr>
+            {% endfor %}
+            {% for scan in recent_ip_scans %}
+            <tr>
+              <td><span class="badge bg-danger">IP</span></td>
+              <td>{{ scan.ip_address }}</td>
+              <td>
+                {% if scan.is_malicious %}
+                <span class="badge bg-danger">Malicious</span>
+                {% else %}
+                <span class="badge bg-success">Safe</span>
+                {% endif %}
+              </td>
+              <td class="text-muted">{{ scan.scan_timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="text-center py-5 text-muted">
+        <i class="fas fa-inbox fa-3x mb-3" style="opacity: 0.3;"></i>
+        <p>No scans yet. Start scanning to see your results here!</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

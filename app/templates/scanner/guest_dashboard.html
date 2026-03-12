@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — SecureCheck{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+
+  <!-- Header -->
+  <div class="text-center mb-5">
+    <span class="section-label">Dashboard</span>
+    <h2 class="mt-2">Security Scanner</h2>
+    <p class="text-muted">Choose a scan type to get started — no account required</p>
+  </div>
+
+  <!-- Scanner Cards -->
+  <div class="row g-4 mb-5">
+    <div class="col-md-6 col-lg-3">
+      <div class="card hover-card h-100 text-center">
+        <div class="card-body p-4">
+          <i class="fas fa-file-shield fa-3x mb-3" style="color:var(--cyan); filter: drop-shadow(0 0 10px rgba(0,212,255,0.5));"></i>
+          <h5 class="card-title">File Scanner</h5>
+          <p class="card-text small">Upload files for AI-powered malware detection</p>
+          <a href="{{ url_for('scanner.file_scan') }}" class="btn btn-primary mt-2">
+            <i class="fas fa-magnifying-glass me-1"></i> Scan File
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+      <div class="card hover-card h-100 text-center">
+        <div class="card-body p-4">
+          <i class="fas fa-envelope-open-text fa-3x mb-3" style="color:var(--green); filter: drop-shadow(0 0 10px rgba(16,185,129,0.5));"></i>
+          <h5 class="card-title">Email Analyzer</h5>
+          <p class="card-text small">Analyse email headers for phishing indicators</p>
+          <a href="{{ url_for('scanner.email_scan') }}" class="btn btn-success mt-2">
+            <i class="fas fa-magnifying-glass me-1"></i> Analyse Email
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+      <div class="card hover-card h-100 text-center">
+        <div class="card-body p-4">
+          <i class="fas fa-link fa-3x mb-3" style="color:var(--amber); filter: drop-shadow(0 0 10px rgba(245,158,11,0.5));"></i>
+          <h5 class="card-title">URL Scanner</h5>
+          <p class="card-text small">Check URLs for malicious content and phishing</p>
+          <a href="{{ url_for('scanner.url_scan') }}" class="btn mt-2" style="background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.4); color:var(--amber);">
+            <i class="fas fa-magnifying-glass me-1"></i> Scan URL
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+      <div class="card hover-card h-100 text-center">
+        <div class="card-body p-4">
+          <i class="fas fa-globe fa-3x mb-3" style="color:var(--red); filter: drop-shadow(0 0 10px rgba(239,68,68,0.5));"></i>
+          <h5 class="card-title">IP Checker</h5>
+          <p class="card-text small">Check IP addresses for abuse reports and threats</p>
+          <a href="{{ url_for('scanner.ip_scan') }}" class="btn btn-danger mt-2">
+            <i class="fas fa-magnifying-glass me-1"></i> Check IP
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Guest notice -->
+  <div class="alert alert-info text-center">
+    <i class="fas fa-circle-info me-2"></i>
+    <strong>Guest Mode:</strong> Results won't be saved.
+    <a href="{{ url_for('auth.register') }}" class="alert-link">Register free</a> to save scan history &amp; access analytics!
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# Flask
+instance/
+.webassets-cache
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+data/*.db
+
+# Environment variables
+.env
+.env.local
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploads and temporary files
+uploads/*
+!uploads/.gitkeep
+reports/*
+!reports/.gitkeep
+
+# ML Models (if large)
+ml_models/*.pkl
+ml_models/*.joblib
+
+# Logs
+*.log
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+.claude/

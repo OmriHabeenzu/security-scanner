@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}About — SecureCheck{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2.5rem; padding-bottom: 4rem;">
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+
+      <!-- Header -->
+      <div class="page-header">
+        <span class="section-label">About</span>
+        <h2 class="mt-2">About SecureCheck</h2>
+        <p>An AI-powered multi-vector security scanner built with machine learning</p>
+        <div class="accent-line"></div>
+      </div>
+
+      <!-- Mission -->
+      <div class="card mb-4">
+        <div class="card-body p-4">
+          <h4 class="card-title mb-3">
+            <i class="fas fa-bullseye me-2" style="color:var(--cyan)"></i>Our Mission
+          </h4>
+          <p class="card-text">
+            SecureCheck is an AI-powered integrated web security scanner designed to provide comprehensive
+            multi-vector threat detection. Our platform combines advanced machine learning algorithms — trained
+            on real-world datasets — with user-friendly interfaces to make cybersecurity accessible to everyone.
+          </p>
+        </div>
+      </div>
+
+      <!-- Key Features -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <i class="fas fa-star me-2" style="color:var(--amber)"></i>Key Features
+        </div>
+        <div class="card-body p-4">
+          <ul class="list-unstyled mb-0">
+            <li class="mb-3 d-flex align-items-start gap-3">
+              <i class="fas fa-file-shield mt-1" style="color:var(--cyan); font-size:1.1rem; flex-shrink:0;"></i>
+              <div>
+                <strong>File Malware Scanner</strong>
+                <p class="text-muted small mb-0 mt-1">PE header analysis using lief + ensemble ML (RF, SVM, Decision Tree) + VirusTotal cross-check across 70+ AV engines.</p>
+              </div>
+            </li>
+            <li class="mb-3 d-flex align-items-start gap-3">
+              <i class="fas fa-envelope-open-text mt-1" style="color:var(--cyan); font-size:1.1rem; flex-shrink:0;"></i>
+              <div>
+                <strong>Email Analyzer</strong>
+                <p class="text-muted small mb-0 mt-1">DKIM/SPF/DMARC validation, ML phishing classification trained on SpamAssassin corpus, and live URL scanning from email body.</p>
+              </div>
+            </li>
+            <li class="mb-3 d-flex align-items-start gap-3">
+              <i class="fas fa-link mt-1" style="color:var(--cyan); font-size:1.1rem; flex-shrink:0;"></i>
+              <div>
+                <strong>URL Scanner</strong>
+                <p class="text-muted small mb-0 mt-1">Heuristic pattern analysis + VirusTotal &amp; Google Safe Browsing reputation checks for real-time malicious link detection.</p>
+              </div>
+            </li>
+            <li class="mb-3 d-flex align-items-start gap-3">
+              <i class="fas fa-globe mt-1" style="color:var(--cyan); font-size:1.1rem; flex-shrink:0;"></i>
+              <div>
+                <strong>IP Checker</strong>
+                <p class="text-muted small mb-0 mt-1">AbuseIPDB reputation check (abuse confidence score + report history) with ip-api.com geolocation (city, region, coordinates).</p>
+              </div>
+            </li>
+            <li class="d-flex align-items-start gap-3">
+              <i class="fas fa-lock mt-1" style="color:var(--green); font-size:1.1rem; flex-shrink:0;"></i>
+              <div>
+                <strong>Privacy-First</strong>
+                <p class="text-muted small mb-0 mt-1">All ML processing is done locally on our server. File content is never shared externally beyond hash lookups.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Tech Stack -->
+      <div class="card mb-5">
+        <div class="card-header">
+          <i class="fas fa-microchip me-2" style="color:var(--purple)"></i>Technology Stack
+        </div>
+        <div class="card-body p-4">
+          <div class="row g-4">
+            <div class="col-md-6">
+              <h6 class="mb-3" style="color:var(--cyan);">
+                <i class="fas fa-server me-2"></i>Backend
+              </h6>
+              <ul class="list-unstyled small text-muted mb-0">
+                <li class="mb-1"><i class="fas fa-circle-dot me-2" style="color:var(--text-faint)"></i>Python &amp; Flask</li>
+                <li class="mb-1"><i class="fas fa-circle-dot me-2" style="color:var(--text-faint)"></i>Scikit-learn (RF, SVM, Decision Tree)</li>
+                <li class="mb-1"><i class="fas fa-circle-dot me-2" style="color:var(--text-faint)"></i>lief — PE binary analysis</li>
+                <li class="mb-1"><i class="fas fa-circle-dot me-2" style="color:var(--text-faint)"></i>SQLite + Flask-SQLAlchemy</li>
+                <li class="mb-1"><i class="fas fa-circle-dot me-2" style="color:var(--text-faint)"></i>Flask-Login authentication</li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <h6 class="mb-3" style="color:var(--cyan);">
+                <i class="fas fa-desktop me-2"></i>Frontend &amp; APIs
+              </h6>
+              <ul class="list-unstyled small text-muted mb-0">
+                <li class="mb-1"><i class="fas fa-circle-dot me-2" style="color:var(--text-faint)"></i>Bootstrap 5 + Font Awesome 6</li>
+                <li class="mb-1"><i class="fas fa-circle-dot me-2" style="color:var(--text-faint)"></i>Inter &amp; Space Grotesk fonts</li>
+                <li class="mb-1"><i class="fas fa-circle-dot me-2" style="color:var(--text-faint)"></i>VirusTotal API v3</li>
+                <li class="mb-1"><i class="fas fa-circle-dot me-2" style="color:var(--text-faint)"></i>AbuseIPDB + ip-api.com</li>
+                <li class="mb-1"><i class="fas fa-circle-dot me-2" style="color:var(--text-faint)"></i>Google Safe Browsing API</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="text-center">
+        <h4 class="mb-2">Ready to secure your digital life?</h4>
+        <p class="text-muted mb-4">Free for guests — register for scan history, PDF reports, and analytics.</p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+          <a href="{{ url_for('scanner.file_scan') }}" class="btn btn-primary btn-lg">
+            Start Scanning <i class="fas fa-arrow-right ms-1"></i>
+          </a>
+          <a href="{{ url_for('auth.register') }}" class="btn btn-outline-primary btn-lg">
+            Create Free Account
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
