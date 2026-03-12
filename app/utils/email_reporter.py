@@ -164,12 +164,22 @@ def send_scan_report(recipient_email, scan_data, scan_type, pdf_buffer=None):
         msg.attach(attachment)
 
     try:
+        # Use unverified context for cPanel shared hosting (shared SSL cert / hostname mismatch)
         context = ssl.create_default_context()
-        with smtplib.SMTP(server, port) as smtp:
-            if use_tls:
-                smtp.starttls(context=context)
-            smtp.login(sender, password)
-            smtp.sendmail(sender, recipient_email, msg.as_string())
+        context.check_hostname = False
+        context.verify_mode = ssl.CERT_NONE
+        if port == 465:
+            # SSL connection (cPanel / port 465)
+            with smtplib.SMTP_SSL(server, port, context=context) as smtp:
+                smtp.login(sender, password)
+                smtp.sendmail(sender, recipient_email, msg.as_string())
+        else:
+            # STARTTLS connection (Gmail / port 587)
+            with smtplib.SMTP(server, port) as smtp:
+                if use_tls:
+                    smtp.starttls(context=context)
+                smtp.login(sender, password)
+                smtp.sendmail(sender, recipient_email, msg.as_string())
         return {'success': True}
     except smtplib.SMTPAuthenticationError:
         return {'success': False, 'error': 'SMTP authentication failed. Check MAIL_USERNAME and MAIL_PASSWORD.'}
