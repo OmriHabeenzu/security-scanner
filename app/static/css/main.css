@@ -176,6 +176,7 @@ a:hover { color: #fff; }
 /* ── Tables ────────────────────────────────────────── */
 .table {
   color: var(--text) !important;
+  --bs-table-color: rgba(255,255,255,0.88);
   --bs-table-bg: transparent;
   --bs-table-striped-bg: rgba(255,255,255,0.03);
   --bs-table-hover-bg: rgba(0,212,255,0.05);
@@ -195,12 +196,13 @@ a:hover { color: #fff; }
 
 .table td {
   border-color: var(--border) !important;
+  color: var(--text) !important;
   padding: 0.8rem 1rem !important;
   vertical-align: middle;
 }
 
 .table-borderless td,
-.table-borderless th { border: none !important; }
+.table-borderless th { border: none !important; color: var(--text) !important; }
 
 /* ── Forms ─────────────────────────────────────────── */
 .form-control,
