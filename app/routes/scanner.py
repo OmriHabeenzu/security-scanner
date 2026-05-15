@@ -83,8 +83,12 @@ def file_batch_scan():
 def download_pdf(scan_type, scan_id):
     """Download PDF report for a scan"""
     from flask import send_file
-    from app.utils.pdf_generator import generate_scan_report_pdf
-    
+    try:
+        from app.utils.pdf_generator import generate_scan_report_pdf
+    except ImportError:
+        flash('PDF generation requires reportlab. Run: pip install reportlab', 'danger')
+        return redirect(url_for('scanner.user_dashboard'))
+
     # Fetch scan based on type
     if scan_type == 'file':
         scan = FileScan.query.filter_by(id=scan_id, user_id=current_user.id).first_or_404()
