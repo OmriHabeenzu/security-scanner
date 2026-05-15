@@ -47,6 +47,9 @@ class Config:
     MAX_GUEST_SCANS_PER_DAY = int(os.environ.get('MAX_GUEST_SCANS_PER_DAY', 10))
     MAX_USER_SCANS_PER_DAY = int(os.environ.get('MAX_USER_SCANS_PER_DAY', 100))
 
+    # GitHub webhook auto-deploy
+    DEPLOY_SECRET = os.environ.get('DEPLOY_SECRET', '')
+
 class DevelopmentConfig(Config):
     """Development configuration"""
     DEBUG = True
