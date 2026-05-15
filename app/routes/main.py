@@ -35,11 +35,13 @@ def deploy():
 
     app_dir = os.path.dirname(current_app.root_path)
     try:
+        subprocess.check_output(
+            ['git', 'fetch', 'origin', 'main'],
+            cwd=app_dir, stderr=subprocess.STDOUT, timeout=60,
+        )
         out = subprocess.check_output(
-            ['git', 'pull', 'origin', 'main'],
-            cwd=app_dir,
-            stderr=subprocess.STDOUT,
-            timeout=60,
+            ['git', 'reset', '--hard', 'origin/main'],
+            cwd=app_dir, stderr=subprocess.STDOUT, timeout=30,
         ).decode()
     except subprocess.CalledProcessError as e:
         return jsonify({'error': e.output.decode()}), 500
