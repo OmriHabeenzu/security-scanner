@@ -52,3 +52,9 @@ dist/
 build/
 *.egg-info/
 .claude/
+
+# Large archives — never commit these
+*.zip
+*.tar.gz
+*.tar.bz2
+db_init.py

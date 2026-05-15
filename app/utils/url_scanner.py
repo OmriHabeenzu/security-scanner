@@ -120,12 +120,14 @@ def _check_urlhaus(url: str) -> dict:
 # ── Domain age ────────────────────────────────────────────────────────────────
 def _domain_age_days(domain: str) -> int | None:
     """Return domain age in days, or None if WHOIS fails."""
+    import socket
+    original_timeout = socket.getdefaulttimeout()
     try:
         import whois
-        # Strip port and www
         base = domain.lower().split(':')[0]
         if base.startswith('www.'):
             base = base[4:]
+        socket.setdefaulttimeout(8)
         w = whois.whois(base)
         created = w.creation_date
         if isinstance(created, list):
@@ -137,6 +139,8 @@ def _domain_age_days(domain: str) -> int | None:
             return max(age, 0)
     except Exception:
         pass
+    finally:
+        socket.setdefaulttimeout(original_timeout)
     return None
 
 
