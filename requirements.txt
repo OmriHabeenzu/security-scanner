@@ -32,7 +32,7 @@ Pillow>=10.0.0
 requests>=2.31.0
 
 # Visualization
-matplotlib>=3.8.0
+matplotlib>=3.10.9
 
 # Database
 Flask-Migrate==4.0.5
