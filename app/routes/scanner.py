@@ -356,4 +356,4 @@ def send_email_report(scan_type, scan_id):
     except Exception as e:
         flash(f'Error sending report: {str(e)}', 'danger')
 
-    return redirect(request.referrer or url_for('scanner.user_dashboard'))
+    return redirect(url_for('scanner.user_dashboard'))

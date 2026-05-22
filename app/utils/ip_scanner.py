@@ -117,8 +117,10 @@ def check_ip_with_real_api(ip_address, api_key):
             # Supplement with ip-api.com for city/region/lat/lon (free, no key)
             city, region, latitude, longitude = 'Unknown', 'Unknown', 0, 0
             try:
+                import ipaddress as _ipa
+                safe_ip = str(_ipa.ip_address(ip_address))  # normalise & validate
                 geo_r = requests.get(
-                    f'http://ip-api.com/json/{ip_address}',
+                    f'http://ip-api.com/json/{safe_ip}',
                     params={'fields': 'country,regionName,city,lat,lon'},
                     timeout=5
                 )

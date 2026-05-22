@@ -127,7 +127,7 @@ def check_dmarc_record(domain, auth_results_header: str = ''):
 
 def extract_links_from_email(email_text):
     """Extract all URLs from email body"""
-    url_pattern = r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
+    url_pattern = r'https?://[^\s<>"\'\\]+'
     urls = re.findall(url_pattern, email_text)
     return list(set(urls))  # Remove duplicates
 

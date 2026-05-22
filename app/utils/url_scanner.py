@@ -10,6 +10,8 @@ URL scanning — multi-layer threat detection:
 """
 
 import re
+import socket
+import ipaddress
 import requests
 from datetime import datetime, timezone
 from urllib.parse import urlparse
@@ -73,10 +75,30 @@ def _levenshtein(a: str, b: str) -> int:
     return row[-1]
 
 
+# ── SSRF protection ───────────────────────────────────────────────────────────
+def _is_safe_external_url(url: str) -> bool:
+    """Resolve hostname and block requests to private/internal addresses."""
+    try:
+        host = urlparse(url).hostname
+        if not host:
+            return False
+        if host.lower() in ('localhost', '0.0.0.0'):
+            return False
+        for _, _, _, _, sockaddr in socket.getaddrinfo(host, None):
+            ip = ipaddress.ip_address(sockaddr[0])
+            if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved:
+                return False
+    except Exception:
+        return False
+    return True
+
+
 # ── Redirect resolution ────────────────────────────────────────────────────────
 def _resolve_final_url(url: str, timeout: int = 5) -> tuple[str, list[str]]:
     """Follow redirect chain, return (final_url, list_of_hops)."""
     hops = []
+    if not _is_safe_external_url(url):
+        return url, []
     try:
         r = requests.head(url, allow_redirects=True, timeout=timeout,
                           headers={'User-Agent': 'Mozilla/5.0'})
