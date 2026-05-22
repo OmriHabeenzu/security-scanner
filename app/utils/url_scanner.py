@@ -95,25 +95,27 @@ def _is_safe_external_url(url: str) -> bool:
 
 # ── Redirect resolution ────────────────────────────────────────────────────────
 def _resolve_final_url(url: str, timeout: int = 5) -> tuple[str, list[str]]:
-    """Follow redirect chain, return (final_url, list_of_hops)."""
+    """Follow redirects manually — each hop is SSRF-validated before fetching."""
+    from urllib.parse import urljoin
     hops = []
-    if not _is_safe_external_url(url):
-        return url, []
-    try:
-        r = requests.head(url, allow_redirects=True, timeout=timeout,
-                          headers={'User-Agent': 'Mozilla/5.0'})
-        current = url
-        for resp in r.history:
-            loc = resp.headers.get('Location', '')
-            if loc and loc != current:
-                hops.append(loc)
-                current = loc
-        final = r.url
-        if final != url:
-            hops.append(final)
-        return final, hops
-    except Exception:
-        return url, []
+    current = url
+    for _ in range(10):  # cap at 10 hops
+        if not _is_safe_external_url(current):
+            break
+        try:
+            r = requests.head(current, allow_redirects=False, timeout=timeout,
+                              headers={'User-Agent': 'Mozilla/5.0'})
+        except Exception:
+            break
+        if r.status_code not in (301, 302, 303, 307, 308):
+            break
+        loc = r.headers.get('Location', '')
+        if not loc:
+            break
+        loc = urljoin(current, loc)
+        hops.append(loc)
+        current = loc
+    return current, hops
 
 
 # ── URLhaus check ──────────────────────────────────────────────────────────────
