@@ -22,7 +22,7 @@ pyspf>=2.0.14
 
 # File Analysis
 python-magic>=0.4.27
-pefile>=2023.2.7
+pefile>=2024.8.26
 
 # Reporting
 reportlab>=4.0.0
