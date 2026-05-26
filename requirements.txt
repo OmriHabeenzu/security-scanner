@@ -38,4 +38,4 @@ matplotlib>=3.8.0
 Flask-Migrate==4.0.5
 
 # Utilities
-python-dotenv>=1.0.0
+python-dotenv>=1.2.2
