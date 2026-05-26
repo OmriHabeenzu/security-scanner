@@ -6,7 +6,7 @@ Flask-WTF==1.2.1
 WTForms==3.1.1
 
 # Security
-Werkzeug==3.0.1
+Werkzeug==3.1.8
 itsdangerous==2.1.2
 
 # Machine Learning (using flexible versions for compatibility)
